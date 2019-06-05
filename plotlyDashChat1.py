@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
-# importing the libraries
-import dash 
-import dash_core_components as dcc 
-import dash_html_components as html 
-import dash_bootstrap_components as dbc
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
 import pandas as pd
 import plotly.graph_objs as go
-from dash.dependencies import Input, Output, State
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 df = pd.read_csv(
     'https://gist.githubusercontent.com/chriddyp/'
@@ -17,43 +16,9 @@ df = pd.read_csv(
 
 available_indicators = df['Indicator Name'].unique()
 
-
-# creata app object of dash.Dash()  css: BOOTSTRAP, GRID, CERULEAN
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
-server = app.server
-# define title of app
-app.title = "Price Simulator"
-
-logo = html.Img(src="/assets/HSBC_logo.svg", height="50px")
-title = dcc.Link(html.B(html.H2("Price Simulator")), href="/", className="navbar-brand")
-
-# Configure navbar 
-nav_items = html.Ul(
-    [dbc.NavItem(dbc.NavLink(html.H4("Home"), href="/page-1")),
-     dbc.NavItem(dbc.NavLink(html.H4("Models"), href="/page-1")),
-     dbc.NavItem(dbc.NavLink(html.H4("Reports"), href="/page-1")),
-     dbc.NavItem(dbc.NavLink(html.H4("Login"), href="/page-1"))
-    ],
-    className="navbar-nav",
-)
-
-navBar_Header = html.Nav(
-    dbc.Container(
-        dbc.Row([
-                dbc.Col(logo, width="auto"),
-                dbc.Col(title, width="auto"),
-                dbc.Col(nav_items, width="auto"),
-            ],
-            justify="between",
-            align="center",            
-            style={"width": "100%"},
-        )
-    ),
-    className="navbar navbar-light navbar-expand-md bg-light sticky-top",
-)
-
-body_layout = html.Div([
+app.layout = html.Div([
     html.Div([
+
         html.Div([
             dcc.Dropdown(
                 id='crossfilter-xaxis-column',
@@ -85,7 +50,7 @@ body_layout = html.Div([
     ], style={
         'borderBottom': 'thin lightgrey solid',
         'backgroundColor': 'rgb(250, 250, 250)',
-        'padding': '50px 50px'
+        'padding': '10px 5px'
     }),
 
     html.Div([
@@ -93,11 +58,11 @@ body_layout = html.Div([
             id='crossfilter-indicator-scatter',
             hoverData={'points': [{'customdata': 'Japan'}]}
         )
-    ], style={'width': '49%', 'display': 'inline-block', 'padding': '50 50'}),
+    ], style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'}),
     html.Div([
         dcc.Graph(id='x-time-series'),
         dcc.Graph(id='y-time-series'),
-    ], style={'display': 'inline-block', 'width': '49%', 'padding': '50 50'}),
+    ], style={'display': 'inline-block', 'width': '49%'}),
 
     html.Div(dcc.Slider(
         id='crossfilter-year--slider',
@@ -105,20 +70,8 @@ body_layout = html.Div([
         max=df['Year'].max(),
         value=df['Year'].max(),
         marks={str(year): str(year) for year in df['Year'].unique()}
-    ), style={'width': '49%', 'padding': '50px 50px 50px 50px'})
+    ), style={'width': '49%', 'padding': '0px 20px 20px 20px'})
 ])
-
-
-# Define layout
-app.layout = html.Div([
-    navBar_Header, body_layout    
-])
-
-
-
-
-
-
 
 
 @app.callback(
@@ -208,9 +161,5 @@ def update_x_timeseries(hoverData, yaxis_column_name, axis_type):
     return create_time_series(dff, axis_type, yaxis_column_name)
 
 
-
-# define server run option to lunch dash app
 if __name__ == '__main__':
-    app.run_server(debug = True)
-
-
+    app.run_server(debug=True, port= 8888)
